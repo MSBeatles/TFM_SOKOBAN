@@ -1,0 +1,21 @@
+7
+7
+W W W U36 W W W
+W W W G W W W
+W W W W W W W
+R63 G W P F B L03
+W W W F W W W
+W W W B W W W
+W W W D30 W W W
+
+[0,1,2,3,4,5,6,7,8,9]
+[0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9]

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -8969874620929840744}
   - component: {fileID: 4743438449215899213}
   - component: {fileID: 7388068774185694580}
+  - component: {fileID: 1129274858124250398}
   m_Layer: 0
   m_Name: Box
   m_TagString: Crate
@@ -31,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 7388068774185694579}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.5, y: 1.5, z: 2.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -143,3 +144,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onGoalReached: {fileID: 11400000, guid: 6be6197a8b91d0941b4286c5a3faa188, type: 2}
   onGoalExited: {fileID: 11400000, guid: 911c7dde29535ba48bd350ba7460a568, type: 2}
+--- !u!114 &1129274858124250398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7388068774185694579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 09493cb8ade2b8f429a0474069242219, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7388068774185694580}
+        m_TargetAssemblyTypeName: BoxMovement, Assembly-CSharp
+        m_MethodName: ReceivePortalMovement
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

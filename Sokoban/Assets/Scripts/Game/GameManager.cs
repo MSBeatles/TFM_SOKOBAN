@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class GameManager : MonoBehaviour
     {
         if (goals_reached > 0 && goals_reached == goals)
         {
-            Debug.Log("YOU WIN");
+            StartCoroutine(VictoryScreen());
         }
     }
 
@@ -40,5 +41,11 @@ public class GameManager : MonoBehaviour
     public void GoalExited()
     {
         goals_reached--;
+    }
+
+    private IEnumerator VictoryScreen()
+    {
+        yield return new WaitForSeconds(1.0f);
+        SceneManager.LoadScene("Victory");
     }
 }

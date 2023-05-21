@@ -7,6 +7,9 @@ TagManager:
   - Goal
   - Crate
   - Wall
+  - Portal
+  - PlayerPush
+  - Fire
   layers:
   - Default
   - TransparentFX
@@ -14,8 +17,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - IgnorePortals
+  - Portal
   - 
   - 
   - 

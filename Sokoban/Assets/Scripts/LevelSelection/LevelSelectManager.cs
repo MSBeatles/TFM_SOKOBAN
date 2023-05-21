@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using TMPro;
 
 
 public class LevelSelectManager : MonoBehaviour
@@ -19,10 +22,9 @@ public class LevelSelectManager : MonoBehaviour
     }
 
 
-    public void LoadLevel()
+    public void LoadLevel(Button btn)
     {
-        PlayerPrefs.SetInt("Width", 8);
-        PlayerPrefs.SetInt("Height", 8);
+        PlayerPrefs.SetString("ChosenLevel", btn.GetComponentInChildren<TMP_Text>().text);
         SceneManager.LoadScene("Level");
     }
 }

@@ -2,33 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
 using UnityEngine.SceneManagement;
 
 public class LoadLevel : MonoBehaviour
 {
-    private enum Tile { Floor, Box, Wall, Goal, Player, BoxGoal };
+    private enum Tile { None, Floor, Box, Wall, Goal, Player, BoxGoal, LeftPortal, RightPortal, UpPortal, DownPortal, Fire };
     private Tile[,] tiles;
     private GameObject[,] myObjects;
+    private int numPortals;
+    private int[,] portals;
     private Vector3 playerPos;
     private int boxes;
-    private bool moving;
     private Vector3 currentPos;
     private Vector3 goalPos;
     private int currentX;
     private int currentY;
     private int goodBoxes;
-
+    private int matchPortalX;
+    private int matchPortalY;
     public GameObject floor;
     public GameObject box;
     public GameObject wall;
     public GameObject goal;
     public GameObject player;
+    public GameObject portal;
+    public GameObject fire;
     public Transform camera;
 
 
     ////MEVES D'ARA
     [Header ("GAME EVENTS")]
     public GameEvent onGoalSet;
+    public GameEvent onSetX;
+    public GameEvent onSetZ;
+
 
     private Transform t_player;
 
@@ -41,12 +49,9 @@ public class LoadLevel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-
-
         //Aquí carreguem el nivell
         //string path = Application.persistentDataPath + "\\" + PlayerPrefs.GetString("ChosenLevel");
-        string path = "Assets\\LevelDesigns\\Test_1.txt";
+        string path = "Assets\\LevelDesigns\\" + PlayerPrefs.GetString("ChosenLevel") + ".txt";
         //Debug.Log(path);
         StreamReader reader = new StreamReader(path, true);
 
@@ -56,61 +61,112 @@ public class LoadLevel : MonoBehaviour
         line = reader.ReadLine();
         int.TryParse(line, out maxX);
         PlayerPrefs.SetFloat("Width", maxX);
+        onSetX.Raise(this, maxX);
         line = reader.ReadLine();
         int.TryParse(line, out maxY);
         PlayerPrefs.SetFloat("Height", maxY);
+        onSetZ.Raise(this, maxY);
 
 
         tiles = new Tile[maxX, maxY];
         myObjects = new GameObject[maxX, maxY];
 
-        moving = false;
-
+        //matchPortalX = 0;
+        //matchPortalY = 0;
 
 
         for (int j = 0; j < maxY; j++)
         {
+            int i = 0;
             line = "";
             line = reader.ReadLine();
             //Debug.Log(line);
-            for (int i = 0; i < maxX; i++)
+            for (int k = 0; k < line.Length; k++)
             {
-                if (line[i] == 'W')
+                if (line[k] == 'W')
                 {
-                    myObjects[i, j] = Instantiate(wall, new Vector3(i, 1.0f, j), Quaternion.identity);
+                    //myObjects[i, j] = Instantiate(wall, new Vector3(i, 1.0f, j), Quaternion.identity);
+                    Instantiate(wall, new Vector3(i, 1.0f, j), Quaternion.identity);
                     Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    tiles[i, j] = Tile.Wall;
+                    //tiles[i, j] = Tile.Wall;
+                    i++;
                 }
-                else if (line[i] == 'G')
+                else if (line[k] == 'G')
                 {
-                    myObjects[i, j] = Instantiate(goal, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    //Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    tiles[i, j] = Tile.Goal;
-                    onGoalSet.Raise();
+                    //myObjects[i, j] = Instantiate(goal, new Vector3(i, 0.0f, j), Quaternion.identity);
+                    Instantiate(goal, new Vector3(i, 0.0f, j), Quaternion.identity);
+                    Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
+                    //tiles[i, j] = Tile.Goal;
+                    onGoalSet.Raise(this, 0);
+                    i++;
                 }
-                else if (line[i] == 'F')
+                else if (line[k] == 'F')
                 {
-                    myObjects[i, j] = Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    tiles[i, j] = Tile.Floor;
+                    //myObjects[i, j] = Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
+                    Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
+                    //tiles[i, j] = Tile.Floor;
+                    i++;
 
                 }
-                else if (line[i] == 'B')
+                else if (line[k] == 'B')
                 {
-                    myObjects[i, j] = Instantiate(box, new Vector3(i, 1.0f, j), Quaternion.identity);
+                    //myObjects[i, j] = Instantiate(box, new Vector3(i, 0.95f, j), Quaternion.identity);
+                    Instantiate(box, new Vector3(i, 0.95f, j), Quaternion.identity);
                     Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    tiles[i, j] = Tile.Box;
+                    //tiles[i, j] = Tile.Box;
                     boxes++;
+                    i++;
                 }
-                else if (line[i] == 'P')
+                else if (line[k] == 'P')
                 {
-                    myObjects[i, j] = Instantiate(player, new Vector3(i, 0.8f, j), Quaternion.identity);
+                    //myObjects[i, j] = Instantiate(player, new Vector3(i, 0.8f, j), Quaternion.identity);
+                    Instantiate(player, new Vector3(i, 0.8f, j), Quaternion.identity);
                     Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    tiles[i, j] = Tile.Player;
+                    //tiles[i, j] = Tile.Player;
                     currentPos = new Vector3(i, 1.0f, j);
                     currentY = j;
                     currentX = i;
-                    t_player = myObjects[i, j].GetComponent<Transform>();
+                    //t_player = myObjects[i, j].GetComponent<Transform>();
+                    i++;
+                }
+                else if (line[k] == 'D')
+                {
+                    //myObjects[i, j] = Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 180, 0));
+                    Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 180, 0));
+                    //tiles[i, j] = Tile.DownPortal;
+                    i++;
                     
+                }
+                else if (line[k] == 'U')
+                {
+                    //myObjects[i, j] = Instantiate(portal, new Vector3(i, 1.0f, j), Quaternion.identity);
+                    Instantiate(portal, new Vector3(i, 1.0f, j), Quaternion.identity);
+                    //tiles[i, j] = Tile.UpPortal;
+                    i++;
+                    
+                }
+                else if (line[k] == 'L')
+                {
+                    //myObjects[i, j] = Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 270, 0));
+                    Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 270, 0));
+                    //tiles[i, j] = Tile.LeftPortal;
+                    i++;
+                    
+                }
+                else if (line[k] == 'R')
+                {
+                    //myObjects[i, j] = Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 90, 0));
+                    Instantiate(portal, new Vector3(i, 1.0f, j), transform.rotation * Quaternion.Euler(0, 90, 0));
+                    //tiles[i, j] = Tile.RightPortal;
+                    i++;
+                    
+                }
+                else if (line[k] == 'Q')
+                {
+                    //myObjects[i, j] = Instantiate(fire, new Vector3(i, 0.0f, j), transform.rotation * Quaternion.identity);
+                    Instantiate(fire, new Vector3(i, 0.0f, j), transform.rotation * Quaternion.identity);
+                    //tiles[i, j] = Tile.RightPortal;
+                    i++;
                 }
             }
         }
@@ -203,30 +259,26 @@ public class LoadLevel : MonoBehaviour
 
 
 
-    public void MoveDown()
+    /**public void MoveDown()
     {
-        moving = true;
         goalPos = currentPos;
         goalPos.y -= 1.0f;
     }
 
     public void MoveUp()
     {
-        moving = true;
         goalPos = currentPos;
         goalPos.y += 1.0f;
     }
 
     public void MoveLeft()
     {
-        moving = true;
         goalPos = currentPos;
         goalPos.x -= 1.0f;
     }
 
     public void MoveRight()
     {
-        moving = true;
         goalPos = currentPos;
         goalPos.x += 1.0f;
     }
@@ -441,5 +493,5 @@ public class LoadLevel : MonoBehaviour
         //Actualitzar myObjects POTSER NO CAL
     }
             
-
+**/
 }
