@@ -452,7 +452,61 @@ public class PlayerMovement : MonoBehaviour
 
     //TODO: FIREBOX ACTS LIKE A WALL FOR POS+2
     //TODO: FIREBOX ACTS WEIRD FOR POS+1: MOVE 0.25 AND GO BACK (BOOL CALLED INTOFIRE THAT TRIGGERS ON UPDATE) (DON'T MOVE PLAYER, MOVE FIREBOX IN TILES)
+    private bool CanMove(int direction)
+    {
+        //0 = right, 1 = left, 2 = up, 3 = down
+        int[,] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        Tile[,] allBannedPortals = {{Tile.UpPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}};
+        Tile[] allowedPortals = {Tile.LeftPortal, Tile.RightPortal, Tile.DownPortal, Tile.UpPortal};
+        //We set the new goals, and next.
+        int goalX = currentX + directions[direction, 0];
+        int goalZ = currentZ + directions[direction, 1];
+        int nextX = currentX + directions[direction, 0] * 2;
+        int nextZ = currentZ + directions[direction, 1] * 2;
 
+        Tile[] bannedPortals = allBannedPortals[direction];
+        Tile allowedPortal = allowedPortals[direction];
+
+        //Now we have to determine if there is a portal. In that case, we will have to rewrite goals or nexts.
+        if (tiles[goalX, goalZ] == allowedPortal)
+        {
+            int [] new_info = PortalPlayerOut(goalX, goalZ);
+            int new_direction = new_info[0];
+            currentX = new_info[1];
+            currentZ = new_info[2];
+            int goalX = currentX + directions[direction, 0];
+            int goalZ = currentZ + directions[direction, 1];
+            int nextX = currentX + directions[direction, 0] * 2;
+            int nextZ = currentZ + directions[direction, 1] * 2;
+        }
+
+        
+        
+        //Copy the code of CanMoveUp
+
+
+    }
+
+
+    private int[] PortalPlayerOut(int portalX, int portalZ)
+    {
+        foreach (CoordPair pair in portalPairings)
+        {
+            if (pair.GetHereX() == entry_x && pair.GetHereZ() == entry_z)
+            {
+                exitX = pair.GetThereX();
+                exitZ = pair.GetThereZ();
+            }
+        }
+
+        directions = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
+        int new_direction = Array.IndexOf(directions, tiles[exitX, exitY]);
+        int [] info = {new_direction, exitX, exitZ};
+        return info
+
+        
+
+    }
 
 
     private bool CanMoveUp()
