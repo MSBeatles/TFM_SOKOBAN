@@ -252,22 +252,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 911c7dde29535ba48bd350ba7460a568, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 53030758}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: GoalExited
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &53030756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,22 +268,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 6be6197a8b91d0941b4286c5a3faa188, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 53030758}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: GoalReached
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &53030757
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,22 +284,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 7750e337f4f411a47b24c2d5d4eae4c5, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 53030758}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: GoalSet
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &53030758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,17 +375,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ade99e3fc08654280d784869b7efb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floor: {fileID: 6119855585252549208, guid: be155c6810911f94b90980a02cf46fb8, type: 3}
-  box: {fileID: 7388068774185694579, guid: 3c7def670496782488bdfc864ada124d, type: 3}
-  wall: {fileID: 890499976104169716, guid: 3354bc0bf4790274f9aead329559e52d, type: 3}
-  goal: {fileID: 618451521122139915, guid: c5065f9bf2e41414a8fa1b85ea1e439f, type: 3}
-  player: {fileID: 3092388756435085693, guid: acc09c4f22b60d1468d47c68cabadc09, type: 3}
-  portal: {fileID: 7160690619331550197, guid: f3e2d11629541794d89df6054fbcb824, type: 3}
-  fire: {fileID: 2838576374073874393, guid: 6b1a52c948e4e874c95d490c26fe17bd, type: 3}
-  camera: {fileID: 963194228}
-  onGoalSet: {fileID: 11400000, guid: 7750e337f4f411a47b24c2d5d4eae4c5, type: 2}
-  onSetX: {fileID: 11400000, guid: 83123fe56b1c5c541b99f3f231b5342f, type: 2}
-  onSetZ: {fileID: 11400000, guid: 82d036bf10f997c47b75e39fe20f39c0, type: 2}
+  floor: {fileID: 0}
+  box: {fileID: 0}
+  wall: {fileID: 0}
+  goal: {fileID: 0}
+  player: {fileID: 0}
+  portal: {fileID: 0}
+  fire: {fileID: 0}
+  camera: {fileID: 0}
+  onGoalSet: {fileID: 0}
+  onSetX: {fileID: 0}
+  onSetZ: {fileID: 0}
 --- !u!4 &465320815
 Transform:
   m_ObjectHideFlags: 0
@@ -721,22 +685,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 112d43f6a9115bb43a3c3020e405e510, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: CreateNewPlayer
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1704479641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -749,12 +701,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11026d0c0adcdef4eb42dc621acb8c6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 3092388756435085693, guid: acc09c4f22b60d1468d47c68cabadc09, type: 3}
-  box: {fileID: 7388068774185694579, guid: 3c7def670496782488bdfc864ada124d, type: 3}
-  onEnterPortal: {fileID: 11400000, guid: adb25ad76cb56144bb84b76296634ac5, type: 2}
-  onEnterPortal2: {fileID: 11400000, guid: a7b7a95d6566e1d4eb9a054f4c56e5a7, type: 2}
-  onEnterPortal3: {fileID: 11400000, guid: ff3f3b1ba059065489884e70749ca039, type: 2}
-  onEnterPortal5: {fileID: 11400000, guid: d1f27a4ac30849b4b86327a6a1f9e96e, type: 2}
+  player: {fileID: 0}
+  box: {fileID: 0}
+  onEnterPortal: {fileID: 0}
+  onEnterPortal2: {fileID: 0}
+  onEnterPortal3: {fileID: 0}
+  onEnterPortal5: {fileID: 0}
 --- !u!4 &1704479642
 Transform:
   m_ObjectHideFlags: 0
@@ -782,22 +734,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: ff3f3b1ba059065489884e70749ca039, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: ReceivePortalPairings
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1704479644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -810,22 +750,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: a7b7a95d6566e1d4eb9a054f4c56e5a7, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: ReceiveGoalPos
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1704479645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -838,22 +766,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: adb25ad76cb56144bb84b76296634ac5, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: ReceiveTiles
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1704479646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -866,22 +782,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 3cf74bfc56a9e0041bf401f2b44eccc2, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: CreateNewBox
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1704479647
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -894,19 +798,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: d1f27a4ac30849b4b86327a6a1f9e96e, type: 2}
+  gameEvent: {fileID: 0}
   response:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1704479641}
-        m_TargetAssemblyTypeName: PortalManager, Assembly-CSharp
-        m_MethodName: ReceiveDestroyPlayer
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []

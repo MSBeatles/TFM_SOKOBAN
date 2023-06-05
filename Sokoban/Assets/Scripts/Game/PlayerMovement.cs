@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.IO;
 using System;
+using System.Linq;
 
 
 public class PlayerMovement : MonoBehaviour
@@ -97,6 +98,7 @@ public class PlayerMovement : MonoBehaviour
     private bool half;
     private bool willBeDestroyed;
     private Vector3 portalGoalPos;
+    private int[] boxGoalPos;
 
     private List<CoordPair> portalPairings; 
 
@@ -148,6 +150,7 @@ public class PlayerMovement : MonoBehaviour
         currentZ = (int)currentPos.z;
         half = false;
         willBeDestroyed = false;
+        boxGoalPos = new int[2];
 
         //Llista que guarda parelles de portals: [[a,b],[c,d]], [[e,f],[g,h]]
         portalPairings = new List<CoordPair>();
@@ -260,7 +263,7 @@ public class PlayerMovement : MonoBehaviour
         if (canMove){
             if (context.ReadValue<Vector2>().x < 0.0f)
             {
-                if (CanMoveLeft())
+                if (CanMove(1))
                 {
                     if (half)
                     {
@@ -279,7 +282,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (context.ReadValue<Vector2>().x > 0.0f)
             {
-                if (CanMoveRight())
+                if (CanMove(0))
                 {
                     if (half)
                     {
@@ -298,7 +301,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (context.ReadValue<Vector2>().y < 0.0f)
             {
-                if (CanMoveDown())
+                if (CanMove(3))
                 {
                     if (half)
                     {
@@ -316,7 +319,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (context.ReadValue<Vector2>().y > 0.0f)
             {
-                if (CanMoveUp())
+                if (CanMove(2))
                 {
                     if (half)
                     {
@@ -376,87 +379,16 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-
-
-    //MOVEMENT METHODS
-    private bool CanMoveDown()
-    {
-        if (currentZ < 1)
-        {
-            return false;
-        }
-        //If there's a wall in that direction, it can't move.
-        if (tiles[currentX, currentZ - 1] == Tile.Wall || tiles[currentX, currentZ - 1] == Tile.DownPortal || tiles[currentX, currentZ - 1] == Tile.LeftPortal || tiles[currentX, currentZ - 1] == Tile.RightPortal || tiles[currentX, currentZ - 1] == Tile.Fire)
-        {
-            return false;
-        }
-        //If there's a portal in that direction, we'll check what's on the other side.
-        else if (tiles[currentX, currentZ - 1] == Tile.UpPortal)
-        {
-            return CheckPortalPlayerOut(currentX, currentZ - 1);
-        }
-        //If there's a box followed by;
-        else if (tiles[currentX, currentZ - 1] == Tile.Box || tiles[currentX, currentZ - 1] == Tile.BoxGoal)
-        {
-            //Two or more cells and:
-            if (currentZ >= 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX, currentZ - 2] == Tile.Box || tiles[currentX, currentZ - 2] == Tile.BoxGoal || tiles[currentX, currentZ - 2] == Tile.Wall || tiles[currentX, currentZ - 2] == Tile.DownPortal || tiles[currentX, currentZ - 2] == Tile.LeftPortal || tiles[currentX, currentZ - 2] == Tile.RightPortal || tiles[currentX, currentZ - 2] == Tile.BoxFire)
-                {
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX, currentZ - 2] == Tile.UpPortal)
-                {
-                    return CheckPortalBoxOut(currentX, currentZ - 2);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        //If there's a box on a fire block followed by:
-        else if (tiles[currentX, currentZ - 1] == Tile.BoxFire)
-        {
-            //Two or more cells and:
-            if (currentZ >= 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX, currentZ - 2] == Tile.Box || tiles[currentX, currentZ - 2] == Tile.BoxGoal || tiles[currentX, currentZ - 2] == Tile.Wall || tiles[currentX, currentZ - 2] == Tile.DownPortal || tiles[currentX, currentZ - 2] == Tile.LeftPortal || tiles[currentX, currentZ - 2] == Tile.RightPortal || tiles[currentX, currentZ - 2] == Tile.BoxFire)
-                {
-                    half = false;
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX, currentZ - 2] == Tile.UpPortal)
-                {
-                    bool result = CheckPortalBoxOut(currentX, currentZ - 2);
-                    half = result;
-                    return result;
-                }
-                else
-                {
-                    half = true;
-                    return true;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    //TODO: FIREBOX ACTS LIKE A WALL FOR POS+2
-    //TODO: FIREBOX ACTS WEIRD FOR POS+1: MOVE 0.25 AND GO BACK (BOOL CALLED INTOFIRE THAT TRIGGERS ON UPDATE) (DON'T MOVE PLAYER, MOVE FIREBOX IN TILES)
     private bool CanMove(int direction)
     {
         //0 = right, 1 = left, 2 = up, 3 = down
         int[,] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        Tile[,] allBannedPortals = {{Tile.UpPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}};
+        Tile[,] allBannedPortals = {
+            {Tile.UpPortal, Tile.DownPortal, Tile.RightPortal},
+            {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, 
+            {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, 
+            {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}
+        };
         Tile[] allowedPortals = {Tile.LeftPortal, Tile.RightPortal, Tile.DownPortal, Tile.UpPortal};
         //We set the new goals, and next.
         int goalX = currentX + directions[direction, 0];
@@ -464,427 +396,163 @@ public class PlayerMovement : MonoBehaviour
         int nextX = currentX + directions[direction, 0] * 2;
         int nextZ = currentZ + directions[direction, 1] * 2;
 
-        Tile[] bannedPortals = allBannedPortals[direction];
+        Tile[] bannedPortals = {allBannedPortals[direction, 0], allBannedPortals[direction, 1], allBannedPortals[direction, 2]};
         Tile allowedPortal = allowedPortals[direction];
 
         //Now we have to determine if there is a portal. In that case, we will have to rewrite goals or nexts.
         if (tiles[goalX, goalZ] == allowedPortal)
         {
             int [] new_info = PortalPlayerOut(goalX, goalZ);
-            int new_direction = new_info[0];
-            currentX = new_info[1];
-            currentZ = new_info[2];
-            int goalX = currentX + directions[direction, 0];
-            int goalZ = currentZ + directions[direction, 1];
-            int nextX = currentX + directions[direction, 0] * 2;
-            int nextZ = currentZ + directions[direction, 1] * 2;
+            direction = new_info[0];
+
+            goalX = new_info[1] + directions[direction, 0];
+            goalZ = new_info[2] + directions[direction, 1];
+            nextX = new_info[1] + directions[direction, 0] * 2;
+            nextZ = new_info[2] + directions[direction, 1] * 2;
         }
-
-        
-        
-        //Copy the code of CanMoveUp
-
-
-    }
-
-
-    private int[] PortalPlayerOut(int portalX, int portalZ)
-    {
-        foreach (CoordPair pair in portalPairings)
+        else if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxFire || tiles[goalX, goalZ] == Tile.BoxGoal)
         {
-            if (pair.GetHereX() == entry_x && pair.GetHereZ() == entry_z)
+            if (tiles[nextX, nextZ] == allowedPortal)
             {
-                exitX = pair.GetThereX();
-                exitZ = pair.GetThereZ();
+                int [] new_info = PortalBoxOut(nextX, nextZ);
+                direction = new_info[0];
+
+                nextX = new_info[1] + directions[direction, 0];
+                nextZ = new_info[2] + directions[direction, 1];
             }
         }
 
-        directions = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
-        int new_direction = Array.IndexOf(directions, tiles[exitX, exitY]);
-        int [] info = {new_direction, exitX, exitZ};
-        return info
 
-        
-
-    }
-
-
-    private bool CanMoveUp()
-    {        
-        if (currentZ >= maxZ - 1)
+        if(goalX < 0 || goalZ < 0 || goalX >= maxX || goalZ >= maxZ)
         {
             return false;
         }
-        //If there's a wall in that direction, it can't move.
-        if (tiles[currentX, currentZ + 1] == Tile.Wall || tiles[currentX, currentZ + 1] == Tile.UpPortal || tiles[currentX, currentZ + 1] == Tile.LeftPortal || tiles[currentX, currentZ + 1] == Tile.RightPortal || tiles[currentX, currentZ + 1] == Tile.Fire)
+        else if(tiles[goalX, goalZ] == Tile.Wall || bannedPortals.Contains(tiles[goalX, goalZ]) == true || tiles[goalX, goalZ] == Tile.Fire)
         {
             return false;
         }
-        //If there's a portal in that direction, we'll check what's on the other side.
-        else if (tiles[currentX, currentZ + 1] == Tile.DownPortal)
-        {
-            return CheckPortalPlayerOut(currentX, currentZ + 1);
-        }
-        //If there's a box followed by:
-        else if (tiles[currentX, currentZ + 1] == Tile.Box || tiles[currentX, currentZ + 1] == Tile.BoxGoal)
-        {
-            //Two or more cells and:
-            if (currentZ < maxZ - 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX, currentZ + 2] == Tile.Box || tiles[currentX, currentZ + 2] == Tile.BoxGoal || tiles[currentX, currentZ + 2] == Tile.Wall || tiles[currentX, currentZ + 2] == Tile.UpPortal || tiles[currentX, currentZ + 2] == Tile.LeftPortal || tiles[currentX, currentZ + 2] == Tile.RightPortal || tiles[currentX, currentZ + 2] == Tile.BoxFire)
-                {
-                    return false;
-                }
-                //A portal it can enter, we'll cehck what's on the other side.
-                else if (tiles[currentX, currentZ + 2] == Tile.DownPortal)
-                {
-                    return CheckPortalBoxOut(currentX, currentZ + 2);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        //If there's a box on a fire block followed by:
-        else if (tiles[currentX, currentZ + 1] == Tile.BoxFire)
-        {
-            //Two or more cells and:
-            if (currentZ < maxZ - 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX, currentZ + 2] == Tile.Box || tiles[currentX, currentZ + 2] == Tile.BoxGoal || tiles[currentX, currentZ + 2] == Tile.Wall || tiles[currentX, currentZ + 2] == Tile.UpPortal || tiles[currentX, currentZ + 2] == Tile.LeftPortal || tiles[currentX, currentZ + 2] == Tile.RightPortal || tiles[currentX, currentZ + 2] == Tile.BoxFire)
-                {
-                    half = false;
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX, currentZ + 2] == Tile.DownPortal)
-                {
-                    bool result = CheckPortalBoxOut(currentX, currentZ + 2);
-                    half = result;
-                    return result;
-                }
-                else
-                {
-                    half = true;
-                    return true;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-
-    private bool CanMoveLeft()
-    {
-        if (currentX < 1)
-        {
-            return false;
-        }
-        //If there's a wall in that direction, it can't move.
-        if (tiles[currentX - 1, currentZ] == Tile.Wall || tiles[currentX - 1, currentZ] == Tile.UpPortal || tiles[currentX - 1, currentZ] == Tile.DownPortal || tiles[currentX - 1, currentZ] == Tile.LeftPortal || tiles[currentX - 1, currentZ] == Tile.Fire)
-        {
-            return false;
-        }
-        //If there's a portal in that direction, we'll check what's on the other side.
-        else if (tiles[currentX - 1, currentZ] == Tile.RightPortal)
-        {
-            return CheckPortalPlayerOut(currentX - 1, currentZ);
-        }
-        //If there's a box followed by:
-        else if (tiles[currentX - 1, currentZ] == Tile.Box || tiles[currentX - 1, currentZ] == Tile.BoxGoal)
-        {
-            //Two or more cells and:
-            if (currentX >= 2)
-            {
-                //another box or a wall in that direction, it can't move. 
-                if (tiles[currentX - 2, currentZ] == Tile.Box || tiles[currentX - 2, currentZ] == Tile.BoxGoal || tiles[currentX - 2, currentZ] == Tile.Wall || tiles[currentX - 2, currentZ] == Tile.UpPortal || tiles[currentX - 2, currentZ] == Tile.DownPortal || tiles[currentX - 2, currentZ] == Tile.LeftPortal || tiles[currentX - 2, currentZ] == Tile.BoxFire)
-                {
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX - 2, currentZ] == Tile.RightPortal)
-                {
-                    return CheckPortalBoxOut(currentX - 2, currentZ);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        //If there's a box on a fire block followed by:
-        else if (tiles[currentX - 1, currentZ] == Tile.BoxFire)
-        {
-            //Two or more cells and:
-            if (currentX >= 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX - 2, currentZ] == Tile.Box || tiles[currentX - 2, currentZ] == Tile.BoxGoal || tiles[currentX - 2, currentZ] == Tile.Wall || tiles[currentX - 2, currentZ] == Tile.DownPortal || tiles[currentX - 2, currentZ] == Tile.LeftPortal || tiles[currentX - 2, currentZ] == Tile.UpPortal || tiles[currentX - 2, currentZ] == Tile.BoxFire)
-                {
-                    half = false;
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX - 2, currentZ] == Tile.RightPortal)
-                {
-                    bool result = CheckPortalBoxOut(currentX - 2, currentZ);
-                    half = result;
-                    return result;
-                }
-                else
-                {
-                    half = true;
-                    return true;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    private bool CanMoveRight()
-    {
-        if (currentX >= maxX - 1)
-        {
-            return false;
-        }
-        //If there's a wall in that direction, it can't move.
-        if (tiles[currentX + 1, currentZ] == Tile.Wall || tiles[currentX + 1, currentZ] == Tile.UpPortal || tiles[currentX + 1, currentZ] == Tile.DownPortal || tiles[currentX + 1, currentZ] == Tile.RightPortal || tiles[currentX + 1, currentZ] == Tile.Fire)
-        {
-            return false;
-        }
-        //If there's a portal in that direction, we'll check what's on the other side.
-        else if (tiles[currentX + 1, currentZ] == Tile.LeftPortal)
-        {
-            return CheckPortalPlayerOut(currentX + 1, currentZ);
-        }
-        //If there's a box followed by:
-        else if (tiles[currentX + 1, currentZ] == Tile.Box || tiles[currentX + 1, currentZ] == Tile.BoxGoal)
-        {
-            //Two or more cells and:
-            if (currentX < maxX - 2)
-            {
-                //another box or a wall in that direction, it can't move.
-                if (tiles[currentX + 2, currentZ] == Tile.Box || tiles[currentX + 2, currentZ] == Tile.BoxGoal || tiles[currentX + 2, currentZ] == Tile.Wall || tiles[currentX + 2, currentZ] == Tile.UpPortal || tiles[currentX + 2, currentZ] == Tile.DownPortal || tiles[currentX + 2, currentZ] == Tile.RightPortal)
-                {
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX + 2, currentZ] == Tile.LeftPortal)
-                {
-                    return CheckPortalBoxOut(currentX + 2, currentZ);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        //If there's a box on a fire block followed by:
-        else if (tiles[currentX + 1, currentZ] == Tile.BoxFire)
-        {
-            half = true;
-            //Two or more cells and:
-            if (currentX < maxX - 2)
-            {
-                //Another box or a wall in that direction, it can't move.
-                if (tiles[currentX + 2, currentZ] == Tile.Box || tiles[currentX + 2, currentZ] == Tile.BoxGoal || tiles[currentX + 2, currentZ] == Tile.Wall || tiles[currentX + 2, currentZ] == Tile.DownPortal || tiles[currentX + 2, currentZ] == Tile.LeftPortal || tiles[currentX + 2, currentZ] == Tile.UpPortal || tiles[currentX + 2, currentZ] == Tile.BoxFire)
-                {
-                    half = false;
-                    return false;
-                }
-                //A portal it can enter, we'll check what's on the other side.
-                else if (tiles[currentX + 2, currentZ] == Tile.LeftPortal)
-                {
-                    bool result = CheckPortalBoxOut(currentX + 2, currentZ);
-                    half = result;
-                    return result;
-                }
-                else
-                {
-                    half = true;
-                    return true;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-
-    private bool CheckPortalPlayerOut(int entry_x, int entry_z)
-    {
-        int exitX = 0;
-        int exitZ = 0;
-        int goalX = 0;
-        int goalZ = 0;
-        int goalXNext = 0;
-        int goalZNext = 0;
-        float goalXHalf = 0;
-        float goalZHalf = 0;
-
-
-        Tile forbiddenPortal1 = Tile.Wall;
-        Tile forbiddenPortal2 = Tile.Wall;
-        Tile forbiddenPortal3 = Tile.Wall;
-        
-        foreach (CoordPair pair in portalPairings)
-        {
-            if (pair.GetHereX() == entry_x && pair.GetHereZ() == entry_z)
-            {
-                exitX = pair.GetThereX();
-                exitZ = pair.GetThereZ();
-            }
-        }
-        if (tiles[exitX, exitZ] == Tile.DownPortal)
-        {
-            goalX = exitX;
-            goalZ = exitZ - 1;
-            goalXNext = exitX;
-            goalZNext = exitZ - 2;
-            goalXHalf = exitX;
-            goalZHalf = exitZ - 0.3f;
-            forbiddenPortal1 = Tile.DownPortal;
-            forbiddenPortal2 = Tile.RightPortal;
-            forbiddenPortal3 = Tile.LeftPortal;
-        }
-        else if (tiles[exitX, exitZ] == Tile.UpPortal)
-        {
-            goalX = exitX;
-            goalZ = exitZ + 1;
-            goalXNext = exitX;
-            goalZNext = exitZ + 2;
-            goalXHalf = exitX;
-            goalZHalf = exitZ + 0.3f;
-            forbiddenPortal1 = Tile.UpPortal;
-            forbiddenPortal2 = Tile.RightPortal;
-            forbiddenPortal3 = Tile.LeftPortal;
-        }
-        else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-        {
-            goalX = exitX - 1;
-            goalZ = exitZ;
-            goalXNext = exitX - 2;
-            goalZNext = exitZ;
-            goalXHalf = exitX - 0.3f;
-            goalZHalf = exitZ;
-            forbiddenPortal1 = Tile.DownPortal;
-            forbiddenPortal2 = Tile.UpPortal;
-            forbiddenPortal3 = Tile.LeftPortal;
-        }
-        else if (tiles[exitX, exitZ] == Tile.RightPortal)
-        {
-            goalX = exitX + 1;
-            goalZ = exitZ;
-            goalXNext = exitX + 2;
-            goalZNext = exitZ;
-            goalXHalf = exitX + 0.3f;
-            goalZHalf = exitZ;
-            forbiddenPortal1 = Tile.DownPortal;
-            forbiddenPortal2 = Tile.UpPortal;
-            forbiddenPortal3 = Tile.RightPortal;
-        }
-        //If there's a fire or a wall, return false.
-        if (tiles[goalX, goalZ] == Tile.Fire || tiles[goalX, goalZ] ==  Tile.Wall)
-        {
-            return false;
-        }
-        //If the player exits the portal and there is a box, we will check the next block. Otherwise it can move.
         else if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxGoal)
         {
-            if (tiles[goalXNext, goalZNext] == Tile.Box || tiles[goalXNext, goalZNext] == Tile.BoxGoal || tiles[goalXNext, goalZNext] == Tile.Wall || tiles[goalXNext, goalZNext] == forbiddenPortal1 || tiles[goalXNext, goalZNext] == forbiddenPortal2 || tiles[goalXNext, goalZNext] == forbiddenPortal3 || tiles[goalXNext, goalZNext] == Tile.BoxFire)
+            //Two or more cells and:
+            if (nextZ <= maxZ && nextX <= maxX && nextX >= 0 && nextZ >= 0)
             {
-                return false;
+                //Another box or a wall in that direction, it can't move.
+                if (tiles[nextX, nextZ] == Tile.Wall || bannedPortals.Contains(tiles[nextX, nextZ]) || tiles[nextX, nextZ] == Tile.Box || tiles[nextX, nextZ] == Tile.BoxGoal || tiles[nextX, nextZ] == Tile.BoxFire)
+                {
+                    return false;
+                }
             }
             else
             {
-                portalGoalPos = new Vector3(goalX, transform.position.y, goalZ);
-                return true;
+                return false;
             }
+            CalculateBoxGoalPos(direction, goalX, goalZ);
         }
-        //If there's a boxFire, we will move half. We will also send the information to the new player, that will be destroyed.
         else if (tiles[goalX, goalZ] == Tile.BoxFire)
         {
-            half = true;
-            portalGoalPos = new Vector3(goalXHalf, transform.position.y, goalZHalf);
-            return true;
+            if (nextZ <= maxZ && nextX <= maxX && nextX >= 0 && nextZ >= 0)
+            {
+                //Another box or a wall in that direction, it can't move.
+                if (tiles[nextX, nextZ] == Tile.Box || tiles[nextX, nextZ] == Tile.BoxGoal || tiles[nextX, nextZ] == Tile.Wall || bannedPortals.Contains(tiles[nextX, nextZ]) || tiles[nextX, nextZ] == Tile.BoxFire)
+                {
+                    half = false;
+                    return false;
+                }
+                //Anything else, it can move.
+                else
+                {
+                    CalculateBoxGoalPos(direction, goalX, goalZ);
+                    half = true;
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
-        portalGoalPos = new Vector3(goalX, transform.position.y, goalZ);
         return true;
     }
 
 
-    private bool CheckPortalBoxOut(int entry_x, int entry_z)
+    private int[] PortalPlayerOut(int entryX, int entryZ)
+    {
+        int exitX = 0;
+        int exitZ = 0;
+        float goalX = 0;
+        float goalZ = 0;
+
+        foreach (CoordPair pair in portalPairings)
+        {
+            if (pair.GetHereX() == entryX && pair.GetHereZ() == entryZ)
+            {
+                exitX = pair.GetThereX();
+                exitZ = pair.GetThereZ();
+            }
+        }
+
+        Tile [] directions = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
+        int[,] directions_modify = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int new_direction = Array.IndexOf(directions, tiles[exitX, exitZ]);
+        int [] info = {new_direction, exitX, exitZ};
+
+        if (tiles[exitX + directions_modify[new_direction, 0], exitZ + directions_modify[new_direction, 1]] == Tile.BoxFire)
+        {
+            goalX = exitX + directions_modify[new_direction, 0] / 3.0f;
+            goalZ = exitZ + directions_modify[new_direction, 1] / 3.0f;
+        }
+        else
+        {
+            goalX = exitX + directions_modify[new_direction, 0];
+            goalZ = exitZ + directions_modify[new_direction, 1];
+        }
+        portalGoalPos = new Vector3(goalX, transform.position.y, goalZ);
+        return info;
+    }
+
+
+    private int[] PortalBoxOut(int portalX, int portalZ)
     {
         int exitX = 0;
         int exitZ = 0;
         int goalX = 0;
         int goalZ = 0;
 
-        
         foreach (CoordPair pair in portalPairings)
         {
-            if (pair.GetHereX() == entry_x && pair.GetHereZ() == entry_z)
+            if (pair.GetHereX() == portalX && pair.GetHereZ() == portalZ)
             {
                 exitX = pair.GetThereX();
                 exitZ = pair.GetThereZ();
             }
         }
-        if (tiles[exitX, exitZ] == Tile.DownPortal)
-        {
-            goalX = exitX;
-            goalZ = exitZ - 1;
-        }
-        else if (tiles[exitX, exitZ] == Tile.UpPortal)
-        {
-            goalX = exitX;
-            goalZ = exitZ + 1;
-        }
-        else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-        {
-            goalX = exitX - 1;
-            goalZ = exitZ;
-        }
-        else if (tiles[exitX, exitZ] == Tile.RightPortal)
-        {
-            goalX = exitX + 1;
-            goalZ = exitZ;
-        }
-        //If the box exits the portal and there is a box, wall or incompatible portal, we return false.
-        if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxGoal || tiles[goalX, goalZ] == Tile.BoxFire)
-        {
-            return false;
-        }
+
+        Tile [] directions = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
+        int[,] directions_modify = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int new_direction = Array.IndexOf(directions, tiles[exitX, exitZ]);
+        int [] info = {new_direction, exitX, exitZ};
+
+        goalX = exitX + directions_modify[new_direction, 0];
+        goalZ = exitZ + directions_modify[new_direction, 1];
+
         int[] spawnPoint = new int[2];
         spawnPoint[0] = exitX;
         spawnPoint[1] = exitZ;
         int[] destinationPoint = new int[2];
         destinationPoint[0] = goalX;
         destinationPoint[1] = goalZ;
-        StartCoroutine(SendInfoBox(spawnPoint, destinationPoint));
-        return true;
+        if (tiles[goalX, goalZ] == Tile.Goal || tiles[goalX, goalZ] == Tile.Floor || tiles[goalX, goalZ] == Tile.Fire)
+        {
+            StartCoroutine(SendInfoBox(spawnPoint, destinationPoint));
+        }
+        return info;
     }
 
 
     private void MoveLeft(float distance)
     {
-        UpdateTiles(0);
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -900,7 +568,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveRight(float distance)
     {
-        UpdateTiles(1);
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -916,7 +585,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveDown(float distance)
     {
-        UpdateTiles(2);
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -932,7 +602,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveUp(float distance)
     {
-        UpdateTiles(3);
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -946,307 +617,72 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-    private void UpdateTiles(int movement)
+    private void UpdateTiles(int[,] affectedTiles)
     {
-        int goalX;
-        int goalZ;
-        int nextX;
-        int nextZ;
-        Tile allowedPortal = Tile.Floor;
+        int firstX = affectedTiles[0, 0];
+        int firstZ = affectedTiles[0, 1];
+        int secondX = affectedTiles[1, 0];
+        int secondZ = affectedTiles[1, 1];
 
-        //If we're moving to the left
-        if (movement == 0)
+
+        if (tiles[firstX, firstZ] == Tile.Player && tiles[secondX, secondZ] != Tile.BoxFire)
         {
-            goalX = currentX - 1;
-            nextX = currentX - 2;
-            goalZ = currentZ;
-            nextZ = currentZ;
-
-            allowedPortal = Tile.RightPortal;
+            tiles[firstX, firstZ] = Tile.Floor;
         }
-        //If we're moving to the right
-        else if (movement == 1)
+        else if (tiles[firstX, firstZ] == Tile.PlayerGoal && tiles[secondX, secondZ] != Tile.BoxFire)
         {
-            goalX = currentX + 1;
-            nextX = currentX + 2;
-            goalZ = currentZ;
-            nextZ = currentZ;
-
-            allowedPortal = Tile.LeftPortal;
-
-        }
-        //If we're moving down
-        else if (movement == 2)
-        {
-            goalX = currentX;
-            nextX = currentX;
-            goalZ = currentZ - 1;
-            nextZ = currentZ - 2;
-
-            allowedPortal = Tile.UpPortal;
-        }
-        //If we're moving up
-        else
-        {
-            goalX = currentX;
-            nextX = currentX;
-            goalZ = currentZ + 1;
-            nextZ = currentZ + 2;
-
-            allowedPortal = Tile.DownPortal;
+            tiles[firstX, firstZ] = Tile.Goal;
         }
 
-        //If we're moving into floor
-        if (tiles[goalX, goalZ] == Tile.Floor)
+        if (tiles[secondX, secondZ] == Tile.Box || tiles[secondX, secondZ] == Tile.Floor)
         {
-            //If we're standing on the floor, we swap floor for player
-            if (tiles[currentX, currentZ] == Tile.Player)
-            {
-                tiles[goalX, goalZ] = Tile.Player;
-                tiles[currentX, currentZ] = Tile.Floor;
-            }
-            //If we're standing on a goal, we move the player and leave a goal only
-            else if (tiles[currentX, currentZ] == Tile.PlayerGoal)
-            {
-                tiles[goalX, goalZ] = Tile.Player;
-                tiles[currentX, currentZ] = Tile.Goal;
-            }
-
+            tiles[secondX, secondZ] = Tile.Player;
         }
-        //If we're moving into a goal
-        else if (tiles[goalX, goalZ] == Tile.Goal)
+        else if (tiles[secondX, secondZ] == Tile.BoxGoal || tiles[secondX, secondZ] == Tile.Goal)
         {
-            //If we're currently on the floor, we swap the goal for playergoal and leave a floor
-            if (tiles[currentX, currentZ] == Tile.Player)
+            tiles[secondX, secondZ] = Tile.PlayerGoal;
+        }
+        else if (tiles[secondX, secondZ] == Tile.BoxFire)
+        {
+            tiles[secondX, secondZ] = Tile.Fire;
+        }
+
+        if (affectedTiles.Length == 3)
+        {
+            int thirdX = affectedTiles[2, 0];
+            int thirdZ = affectedTiles[2, 1];
+            if (tiles[thirdX, thirdZ] == Tile.Fire)
             {
-                tiles[goalX, goalZ] = Tile.PlayerGoal;
-                tiles[currentX, currentZ] = Tile.Floor;    
+                tiles[thirdX, thirdZ] = Tile.BoxFire;
             }
-            //If we're currently on a goal, we move onto a playergoal and leave a goal
-            else if (tiles[currentX, currentZ] == Tile.PlayerGoal)
+            else if (tiles[thirdX, thirdZ] == Tile.Goal)
             {
-                tiles[goalX, goalZ] = Tile.PlayerGoal;
-                tiles[currentX, currentZ] = Tile.Goal;
+                tiles[thirdX, thirdZ] = Tile.BoxGoal;
+            }
+            else if (tiles[thirdX, thirdZ] == Tile.Floor)
+            {
+                tiles[thirdX, thirdZ] = Tile.Box;
             }
         }
-        //If we're moving into a Box (pushing it)
-        else if (tiles[goalX, goalZ] == Tile.Box)
-        {
-            tiles[goalX, goalZ] = Tile.Player;
-            //If next to the box there's a goal, we will put a BoxGoal there
-            if (tiles[nextX, nextZ] == Tile.Goal)
-            {
-                tiles[nextX, nextZ] = Tile.BoxGoal;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Floor)
-            {
-                tiles[nextX, nextZ] = Tile.Box;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Fire)
-            {
-                tiles[nextX, nextZ] = Tile.BoxFire;
-            }
-            else if (tiles[nextX, nextZ] == allowedPortal)
-            {
-                int exitX = 0;
-                int exitZ = 0;
+    }
 
-                //Find what's after the portal
-                foreach (CoordPair pair in portalPairings)
-                {
-                    if (pair.GetHereX() == nextX && pair.GetHereZ() == nextZ)
-                    {
-                        exitX = pair.GetThereX();
-                        exitZ = pair.GetThereZ();
-                    }
-                }
-                if (tiles[exitX, exitZ] == Tile.DownPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ - 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.UpPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ + 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-                {
-                    nextX = exitX - 1;
-                    nextZ = exitZ;
-                }
-                else if (tiles[exitX, exitZ] == Tile.RightPortal)
-                {
-                    nextX = exitX + 1;
-                    nextZ = exitZ;
-                }
-                if (tiles[nextX, nextZ] == Tile.Goal)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxGoal;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Floor)
-                {
-                    tiles[nextX, nextZ] = Tile.Box;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Fire)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxFire;
-                }
-            }
 
-            if (tiles[currentX, currentZ] == Tile.Player)
-            {
-                tiles[currentX, currentZ] = Tile.Floor;
-            }
-            else if (tiles[currentX, currentZ] == Tile.PlayerGoal)
-            {
-                tiles[currentX, currentZ] = Tile.Goal;
-            }
-        }
-        else if (tiles[goalX, goalZ] == Tile.BoxGoal)
-        {
-            tiles[goalX, goalZ] = Tile.PlayerGoal;
-            //If next to the box there's a goal, we will put a BoxGoal there
-            if (tiles[nextX, nextZ] == Tile.Goal)
-            {
-                tiles[nextX, nextZ] = Tile.BoxGoal;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Floor)
-            {
-                tiles[nextX, nextZ] = Tile.Box;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Fire)
-            {
-                tiles[nextX, nextZ] = Tile.BoxFire;
-            }
-            else if (tiles[nextX, nextZ] == allowedPortal)
-            {
-                int exitX = 0;
-                int exitZ = 0;
+    private void CalculateBoxGoalPos(int direction, int startingX, int startingZ)
+    {
+        int[,] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        Tile[,] allBannedPortals = {{Tile.UpPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}};
+        Tile[] allowedPortals = {Tile.LeftPortal, Tile.RightPortal, Tile.DownPortal, Tile.UpPortal};
+        //We set the new goals, and next.
+        int goalX = currentX + directions[direction, 0];
+        int goalZ = currentZ + directions[direction, 1];
 
-                //Find what's after the portal
-                foreach (CoordPair pair in portalPairings)
-                {
-                    if (pair.GetHereX() == nextX && pair.GetHereZ() == nextZ)
-                    {
-                        exitX = pair.GetThereX();
-                        exitZ = pair.GetThereZ();
-                    }
-                }
-                if (tiles[exitX, exitZ] == Tile.DownPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ - 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.UpPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ + 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-                {
-                    nextX = exitX - 1;
-                    nextZ = exitZ;
-                }
-                else if (tiles[exitX, exitZ] == Tile.RightPortal)
-                {
-                    nextX = exitX + 1;
-                    nextZ = exitZ;
-                }
-                if (tiles[nextX, nextZ] == Tile.Goal)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxGoal;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Floor)
-                {
-                    tiles[nextX, nextZ] = Tile.Box;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Fire)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxFire;
-                }
-            }
+        Tile[] bannedPortals = {allBannedPortals[direction, 0], allBannedPortals[direction, 1], allBannedPortals[direction, 2]};
+        Tile allowedPortal = allowedPortals[direction];
 
-            if (tiles[currentX, currentZ] == Tile.Player)
-            {
-                tiles[currentX, currentZ] = Tile.Floor;
-            }
-            else if (tiles[currentX, currentZ] == Tile.PlayerGoal)
-            {
-                tiles[currentX, currentZ] = Tile.Goal;
-            }
-        }
-        //If we're moving into a BoxFire (pushing it)
-        else if (tiles[goalX, goalZ] == Tile.BoxFire)
-        {
-            tiles[goalX, goalZ] = Tile.Fire;
-            //If next to the box there's a goal, we will put a BoxGoal there
-            if (tiles[nextX, nextZ] == Tile.Goal)
-            {
-                tiles[nextX, nextZ] = Tile.BoxGoal;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Floor)
-            {
-                tiles[nextX, nextZ] = Tile.Box;
-            }
-            else if (tiles[nextX, nextZ] == Tile.Fire)
-            {
-                tiles[nextX, nextZ] = Tile.BoxFire;
-            }
-            else if (tiles[nextX, nextZ] == allowedPortal)
-            {
-                int exitX = 0;
-                int exitZ = 0;
-
-                //Find what's after the portal
-                foreach (CoordPair pair in portalPairings)
-                {
-                    if (pair.GetHereX() == nextX && pair.GetHereZ() == nextZ)
-                    {
-                        exitX = pair.GetThereX();
-                        exitZ = pair.GetThereZ();
-                    }
-                }
-                if (tiles[exitX, exitZ] == Tile.DownPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ - 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.UpPortal)
-                {
-                    nextX = exitX;
-                    nextZ = exitZ + 1;
-                }
-                else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-                {
-                    nextX = exitX - 1;
-                    nextZ = exitZ;
-                }
-                else if (tiles[exitX, exitZ] == Tile.RightPortal)
-                {
-                    nextX = exitX + 1;
-                    nextZ = exitZ;
-                }
-                if (tiles[nextX, nextZ] == Tile.Goal)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxGoal;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Floor)
-                {
-                    tiles[nextX, nextZ] = Tile.Box;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Fire)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxFire;
-                }
-            }
-        }
-        //If we're entering a portal
-        else if (tiles[goalX, goalZ] == allowedPortal)
+        if (tiles[goalX, goalZ] == allowedPortal)
         {
             int exitX = 0;
             int exitZ = 0;
-            //Find what's after the portal.
             foreach (CoordPair pair in portalPairings)
             {
                 if (pair.GetHereX() == goalX && pair.GetHereZ() == goalZ)
@@ -1255,102 +691,32 @@ public class PlayerMovement : MonoBehaviour
                     exitZ = pair.GetThereZ();
                 }
             }
-            //Check the kind of portal we're leaving
-            if (tiles[exitX, exitZ] == Tile.DownPortal)
-            {
-                goalX = exitX;
-                nextX = exitX;
-                goalZ = exitZ - 1;
-                nextZ = exitZ - 2;
-            }
-            else if (tiles[exitX, exitZ] == Tile.UpPortal)
-            {
-                goalX = exitX;
-                nextX = exitX;
-                goalZ = exitZ + 1;
-                nextZ = exitZ + 2;
-            }
-            else if (tiles[exitX, exitZ] == Tile.LeftPortal)
-            {
-                goalX = exitX - 1;
-                nextX = exitX - 2;
-                goalZ = exitZ;
-                nextZ = exitZ;
-            }
-            else if (tiles[exitX, exitZ] == Tile.RightPortal)
-            {
-                goalX = exitX + 1;
-                nextX = exitX + 2;
-                goalZ = exitZ;
-                nextZ = exitZ;
-            }
-            //If we're moving into a goal, we set it to playergoal.
-            if (tiles[goalX, goalZ] == Tile.Goal)
-            {
-                tiles[goalX, goalZ] = Tile.PlayerGoal;
-            }
-            //If we're moving into floor, we set it to player.
-            else if (tiles[goalX, goalZ] == Tile.Floor)
-            {
-                tiles[goalX, goalZ] = Tile.Player;
-            }
-            //If we're moving into a box, we set it to player and check beyond:
-            else if (tiles[goalX, goalZ] == Tile.Box)
-            {
-                tiles[goalX, goalZ] = Tile.Player;
-                //If there's a goal, we set it to boxgoal
-                if (tiles[nextX, nextZ] == Tile.Goal)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxGoal;
-                }
-                //If there's a floor, we set it to box
-                else if (tiles[nextX, nextZ] == Tile.Floor)
-                {
-                    tiles[nextX, nextZ] = Tile.Box;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Fire)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxFire;
-                }
-            }
-            //If we're moving into a boxgoal, we set it to playergoal and check beyond:
-            else if (tiles[goalX, goalZ] == Tile.BoxGoal)
-            {
-                tiles[goalX, goalZ] = Tile.PlayerGoal;
-                //If there's a goal, we set it to boxgoal
-                if (tiles[nextX, nextZ] == Tile.Goal)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxGoal;
-                }
-                //If there's a floor, we set it to box
-                else if (tiles[nextX, nextZ] == Tile.Floor)
-                {
-                    tiles[nextX, nextZ] = Tile.Box;
-                }
-                else if (tiles[nextX, nextZ] == Tile.Fire)
-                {
-                    tiles[nextX, nextZ] = Tile.BoxFire;
-                }
-            }
-            //We check what we left behind
-            if (tiles[currentX, currentZ] == Tile.Player)
-            {
-                tiles[currentX, currentZ] = Tile.Floor;
-            }
-            else if (tiles[currentX, currentZ] == Tile. PlayerGoal)
-            {
-                tiles[currentX, currentZ] = Tile.Goal;
-            }
+
+            Tile [] directions_portals = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
+            int[,] directions_modify = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            direction = Array.IndexOf(directions_portals, tiles[exitX, exitZ]);
+
+            goalX = exitX + directions_modify[direction, 0];
+            goalZ = exitZ + directions_modify[direction, 1];
+
+            bannedPortals[0] = allBannedPortals[direction, 0];
+            bannedPortals[1] = allBannedPortals[direction, 1];
+            bannedPortals[2] = allBannedPortals[direction, 2];
+            allowedPortal = allowedPortals[direction];
+        }
+
+
+        if (tiles[goalX, goalZ] == Tile.Fire || tiles[goalX, goalZ] == Tile.Goal || tiles[goalX, goalZ] == Tile.Floor)
+        {
+            boxGoalPos[0] = goalX;
+            boxGoalPos[1] = goalZ;
+        }
+        else if (tiles[goalX, goalZ] == Tile.Wall || bannedPortals.Contains(tiles[goalX, goalZ]))
+        {
+            boxGoalPos[0] = startingX;
+            boxGoalPos[1] = startingZ;
         }
     }
-
-
-
-
-
-
-
-
 
 
     void OnCollisionEnter(Collision coll)
