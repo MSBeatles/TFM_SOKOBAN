@@ -35,7 +35,6 @@ public class BoxMovement : MonoBehaviour
             {
                 moving = false;
                 currentPos = goalPos;
-                Debug.Log(portaling);
                 if (portaling)
                 {
                     Destroy(gameObject);
@@ -98,8 +97,6 @@ public class BoxMovement : MonoBehaviour
         {
             int[] pos = (int[]) _originalToSpawn;
             moving = true;
-            Debug.Log(pos[0]);
-            Debug.Log(pos[1]);
             goalPos.x = pos[0];
             goalPos.z = pos[1];
         }

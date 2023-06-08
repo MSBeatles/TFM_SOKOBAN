@@ -10,6 +10,7 @@ TagManager:
   - Portal
   - PlayerPush
   - Fire
+  - Ice
   layers:
   - Default
   - TransparentFX

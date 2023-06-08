@@ -79,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
 
 
     
-    public enum Tile { None, Floor, Box, Wall, Goal, Player, PlayerGoal, BoxGoal, LeftPortal, RightPortal, UpPortal, DownPortal, Fire, BoxFire };
+    public enum Tile { None, Floor, Box, Wall, Goal, Player, PlayerGoal, BoxGoal, LeftPortal, RightPortal, UpPortal, DownPortal, Fire, BoxFire, Ice, BoxIce, PlayerIce };
     private Tile[,] tiles;
     /**private GameObject[,] myObjects;
     private Vector3 playerPos;
@@ -99,6 +99,7 @@ public class PlayerMovement : MonoBehaviour
     private bool willBeDestroyed;
     private Vector3 portalGoalPos;
     private int[] boxGoalPos;
+    private int[] secondTilePos;
 
     private List<CoordPair> portalPairings; 
 
@@ -151,6 +152,9 @@ public class PlayerMovement : MonoBehaviour
         half = false;
         willBeDestroyed = false;
         boxGoalPos = new int[2];
+        boxGoalPos[0] = -1;
+        boxGoalPos[1] = -1;
+        secondTilePos = new int[2];
 
         //Llista que guarda parelles de portals: [[a,b],[c,d]], [[e,f],[g,h]]
         portalPairings = new List<CoordPair>();
@@ -260,6 +264,7 @@ public class PlayerMovement : MonoBehaviour
     private void Move(InputAction.CallbackContext context)
     {
         half = false;
+        portaling = false;
         if (canMove){
             if (context.ReadValue<Vector2>().x < 0.0f)
             {
@@ -345,8 +350,11 @@ public class PlayerMovement : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, goalPos, 2.5f * Time.deltaTime);
         if (transform.position == goalPos)
         {
+            boxGoalPos[0] = -1;
+            boxGoalPos[1] = -1;
             if (!portaling && !half)
             {
+                //Debug.Log("A: " + currentPos.x + ", " + currentPos.z);
                 currentPos = goalPos;
                 currentX = (int)currentPos.x;
                 currentZ = (int)currentPos.z;
@@ -354,24 +362,29 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (portaling && !half)
             {
+                //Debug.Log("B: " + currentPos.x + ", " + currentPos.z);
                 Destroy(gameObject);
             }
             else if (!portaling && half)
             {
+                Debug.Log("C: " + currentPos.x + ", " + currentPos.z);
                 canMove = true;
                 goalPos = new Vector3 (currentX, 1.0f, currentZ);
-                half = false;
             }
             else if (portaling && half)
             {
+                Debug.Log("D: " + currentPos.x + ", " + currentPos.z);
+                Debug.Log("D: " + currentX + ", " + currentZ);
                 canMove = true;
                 goalPos = new Vector3 (currentX, 1.0f, currentZ);
             }
             if (willBeDestroyed && half)
             {
+                //Debug.Log("E: " + currentPos.x + ", " + currentPos.z);
                 goalPos = new Vector3 (currentX, 1.0f, currentZ);
                 if (transform.position == goalPos)
                 {
+                    //Debug.Log("F: " + currentPos.x + ", " + currentPos.z);
                     Destroy(gameObject);
                 }
             }
@@ -386,15 +399,29 @@ public class PlayerMovement : MonoBehaviour
         Tile[,] allBannedPortals = {
             {Tile.UpPortal, Tile.DownPortal, Tile.RightPortal},
             {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, 
-            {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, 
-            {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}
+            {Tile.LeftPortal, Tile.UpPortal, Tile.RightPortal}, 
+            {Tile.DownPortal, Tile.LeftPortal, Tile.RightPortal}
         };
         Tile[] allowedPortals = {Tile.LeftPortal, Tile.RightPortal, Tile.DownPortal, Tile.UpPortal};
-        //We set the new goals, and next.
+
+        //We set the goals, and next.
         int goalX = currentX + directions[direction, 0];
         int goalZ = currentZ + directions[direction, 1];
         int nextX = currentX + directions[direction, 0] * 2;
         int nextZ = currentZ + directions[direction, 1] * 2;
+        
+        secondTilePos[0] = goalX;
+        secondTilePos[1] = goalZ;
+        
+        int new_direction = direction;
+        int box_direction = direction;
+
+        bool boxBool = false;
+
+        if (goalX < 0 || goalX > maxX - 1 || goalZ < 0 || goalZ > maxZ - 1)
+        {
+            return false;
+        }
 
         Tile[] bannedPortals = {allBannedPortals[direction, 0], allBannedPortals[direction, 1], allBannedPortals[direction, 2]};
         Tile allowedPortal = allowedPortals[direction];
@@ -403,25 +430,32 @@ public class PlayerMovement : MonoBehaviour
         if (tiles[goalX, goalZ] == allowedPortal)
         {
             int [] new_info = PortalPlayerOut(goalX, goalZ);
-            direction = new_info[0];
-
-            goalX = new_info[1] + directions[direction, 0];
-            goalZ = new_info[2] + directions[direction, 1];
-            nextX = new_info[1] + directions[direction, 0] * 2;
-            nextZ = new_info[2] + directions[direction, 1] * 2;
+            new_direction = new_info[0];
+            boxBool = true;
+            goalX = new_info[1] + directions[new_direction, 0];
+            goalZ = new_info[2] + directions[new_direction, 1];
+            nextX = new_info[1] + directions[new_direction, 0] * 2;
+            nextZ = new_info[2] + directions[new_direction, 1] * 2;            
+            secondTilePos[0] = goalX;
+            secondTilePos[1] = goalZ;
         }
-        else if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxFire || tiles[goalX, goalZ] == Tile.BoxGoal)
+        
+        
+        if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxFire || tiles[goalX, goalZ] == Tile.BoxGoal)
         {
+            if (nextX < 0 || nextX > maxX - 1 || nextZ < 0 || nextZ > maxZ - 1)
+            {
+                return false;
+            }
             if (tiles[nextX, nextZ] == allowedPortal)
             {
                 int [] new_info = PortalBoxOut(nextX, nextZ);
-                direction = new_info[0];
+                box_direction = new_info[0];
 
-                nextX = new_info[1] + directions[direction, 0];
-                nextZ = new_info[2] + directions[direction, 1];
+                nextX = new_info[1] + directions[box_direction, 0];
+                nextZ = new_info[2] + directions[box_direction, 1];
             }
         }
-
 
         if(goalX < 0 || goalZ < 0 || goalX >= maxX || goalZ >= maxZ)
         {
@@ -433,6 +467,14 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (tiles[goalX, goalZ] == Tile.Box || tiles[goalX, goalZ] == Tile.BoxGoal)
         {
+            if (boxBool)
+            {
+                CalculateBoxGoalPos(new_direction, goalX, goalZ);
+            }
+            else
+            {
+                CalculateBoxGoalPos(direction, goalX, goalZ);
+            }
             //Two or more cells and:
             if (nextZ <= maxZ && nextX <= maxX && nextX >= 0 && nextZ >= 0)
             {
@@ -441,15 +483,19 @@ public class PlayerMovement : MonoBehaviour
                 {
                     return false;
                 }
+                else
+                {
+                    return true;
+                }
             }
             else
             {
                 return false;
             }
-            CalculateBoxGoalPos(direction, goalX, goalZ);
         }
         else if (tiles[goalX, goalZ] == Tile.BoxFire)
         {
+            half = true;
             if (nextZ <= maxZ && nextX <= maxX && nextX >= 0 && nextZ >= 0)
             {
                 //Another box or a wall in that direction, it can't move.
@@ -461,7 +507,14 @@ public class PlayerMovement : MonoBehaviour
                 //Anything else, it can move.
                 else
                 {
-                    CalculateBoxGoalPos(direction, goalX, goalZ);
+                    if (boxBool)
+                    {
+                        CalculateBoxGoalPos(new_direction, goalX, goalZ);
+                    }
+                    else
+                    {
+                        CalculateBoxGoalPos(direction, goalX, goalZ);
+                    }
                     half = true;
                     return true;
                 }
@@ -473,6 +526,7 @@ public class PlayerMovement : MonoBehaviour
         }
         return true;
     }
+
 
 
     private int[] PortalPlayerOut(int entryX, int entryZ)
@@ -498,8 +552,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (tiles[exitX + directions_modify[new_direction, 0], exitZ + directions_modify[new_direction, 1]] == Tile.BoxFire)
         {
-            goalX = exitX + directions_modify[new_direction, 0] / 3.0f;
-            goalZ = exitZ + directions_modify[new_direction, 1] / 3.0f;
+            half = true;
+            goalX = exitX + (directions_modify[new_direction, 0] / 3.0f);
+            goalZ = exitZ + (directions_modify[new_direction, 1] / 3.0f);
         }
         else
         {
@@ -551,8 +606,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveLeft(float distance)
     {
-        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
-        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -563,13 +616,13 @@ public class PlayerMovement : MonoBehaviour
         }
         goalPos = currentPos;
         goalPos.x -= distance;
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.z}, {secondTilePos[0], secondTilePos[1]}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
     }
 
 
     private void MoveRight(float distance)
     {
-        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
-        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -580,13 +633,13 @@ public class PlayerMovement : MonoBehaviour
         }
         goalPos = currentPos;
         goalPos.x += distance;
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.z}, {secondTilePos[0], secondTilePos[1]}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
     }
 
 
     private void MoveDown(float distance)
     {
-        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
-        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -597,13 +650,13 @@ public class PlayerMovement : MonoBehaviour
         }
         goalPos = currentPos;
         goalPos.z -= distance;
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.z}, {secondTilePos[0], secondTilePos[1]}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
     }
 
 
     private void MoveUp(float distance)
     {
-        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.y}, {(int)goalPos.x, (int)goalPos.y}, {boxGoalPos[0], boxGoalPos[1]}};
-        UpdateTiles(affectedTiles);
         if (firstTime)
         {
             foreach (Collider col in GetComponents<Collider>())
@@ -614,6 +667,8 @@ public class PlayerMovement : MonoBehaviour
         }
         goalPos = currentPos;
         goalPos.z += distance;
+        int[,] affectedTiles = {{(int)currentPos.x, (int)currentPos.z}, {secondTilePos[0], secondTilePos[1]}, {boxGoalPos[0], boxGoalPos[1]}};
+        UpdateTiles(affectedTiles);
     }
 
 
@@ -623,7 +678,8 @@ public class PlayerMovement : MonoBehaviour
         int firstZ = affectedTiles[0, 1];
         int secondX = affectedTiles[1, 0];
         int secondZ = affectedTiles[1, 1];
-
+        int thirdX = affectedTiles[2, 0];
+        int thirdZ = affectedTiles[2, 1];
 
         if (tiles[firstX, firstZ] == Tile.Player && tiles[secondX, secondZ] != Tile.BoxFire)
         {
@@ -633,24 +689,11 @@ public class PlayerMovement : MonoBehaviour
         {
             tiles[firstX, firstZ] = Tile.Goal;
         }
+        if (tiles[secondX, secondZ] == Tile.Box || tiles[secondX, secondZ] == Tile.BoxFire || tiles[secondX, secondZ] == Tile.BoxGoal)
+        {
+            thirdX = affectedTiles[2, 0];
+            thirdZ = affectedTiles[2, 1];
 
-        if (tiles[secondX, secondZ] == Tile.Box || tiles[secondX, secondZ] == Tile.Floor)
-        {
-            tiles[secondX, secondZ] = Tile.Player;
-        }
-        else if (tiles[secondX, secondZ] == Tile.BoxGoal || tiles[secondX, secondZ] == Tile.Goal)
-        {
-            tiles[secondX, secondZ] = Tile.PlayerGoal;
-        }
-        else if (tiles[secondX, secondZ] == Tile.BoxFire)
-        {
-            tiles[secondX, secondZ] = Tile.Fire;
-        }
-
-        if (affectedTiles.Length == 3)
-        {
-            int thirdX = affectedTiles[2, 0];
-            int thirdZ = affectedTiles[2, 1];
             if (tiles[thirdX, thirdZ] == Tile.Fire)
             {
                 tiles[thirdX, thirdZ] = Tile.BoxFire;
@@ -664,46 +707,51 @@ public class PlayerMovement : MonoBehaviour
                 tiles[thirdX, thirdZ] = Tile.Box;
             }
         }
+        if (tiles[secondX, secondZ] == Tile.Box || tiles[secondX, secondZ] == Tile.Floor)
+        {
+            tiles[secondX, secondZ] = Tile.Player;
+        }
+        else if (tiles[secondX, secondZ] == Tile.BoxGoal || tiles[secondX, secondZ] == Tile.Goal)
+        {
+            tiles[secondX, secondZ] = Tile.PlayerGoal;
+        }
+        else if (tiles[secondX, secondZ] == Tile.BoxFire)
+        {
+            tiles[secondX, secondZ] = Tile.Fire;
+        }
     }
 
 
     private void CalculateBoxGoalPos(int direction, int startingX, int startingZ)
     {
         int[,] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        Tile[,] allBannedPortals = {{Tile.UpPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, {Tile.LeftPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.LeftPortal, Tile.RightPortal}};
+        Tile[,] allBannedPortals = {{Tile.UpPortal, Tile.DownPortal, Tile.RightPortal}, {Tile.UpPortal, Tile.DownPortal, Tile.LeftPortal}, {Tile.LeftPortal, Tile.UpPortal, Tile.RightPortal}, {Tile.DownPortal, Tile.LeftPortal, Tile.RightPortal}};
         Tile[] allowedPortals = {Tile.LeftPortal, Tile.RightPortal, Tile.DownPortal, Tile.UpPortal};
-        //We set the new goals, and next.
-        int goalX = currentX + directions[direction, 0];
-        int goalZ = currentZ + directions[direction, 1];
+        Tile[] directionPortals = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
 
         Tile[] bannedPortals = {allBannedPortals[direction, 0], allBannedPortals[direction, 1], allBannedPortals[direction, 2]};
         Tile allowedPortal = allowedPortals[direction];
 
-        if (tiles[goalX, goalZ] == allowedPortal)
+        int exitX = startingX;
+        int exitZ = startingZ;
+        int final_direction = direction;
+
+        if (tiles[startingX + directions[direction, 0], startingZ + directions[direction, 1]] == allowedPortal)
         {
-            int exitX = 0;
-            int exitZ = 0;
             foreach (CoordPair pair in portalPairings)
             {
-                if (pair.GetHereX() == goalX && pair.GetHereZ() == goalZ)
+                if (pair.GetHereX() == startingX + directions[direction, 0] && pair.GetHereZ() == startingZ + directions[direction, 1])
                 {
                     exitX = pair.GetThereX();
                     exitZ = pair.GetThereZ();
+                    final_direction = Array.IndexOf(directionPortals, tiles[exitX, exitZ]);
                 }
             }
-
-            Tile [] directions_portals = {Tile.RightPortal, Tile.LeftPortal, Tile.UpPortal, Tile.DownPortal};
-            int[,] directions_modify = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-            direction = Array.IndexOf(directions_portals, tiles[exitX, exitZ]);
-
-            goalX = exitX + directions_modify[direction, 0];
-            goalZ = exitZ + directions_modify[direction, 1];
-
-            bannedPortals[0] = allBannedPortals[direction, 0];
-            bannedPortals[1] = allBannedPortals[direction, 1];
-            bannedPortals[2] = allBannedPortals[direction, 2];
-            allowedPortal = allowedPortals[direction];
         }
+        int goalX = exitX + directions[final_direction, 0];
+        int goalZ = exitZ + directions[final_direction, 1];
+
+
 
 
         if (tiles[goalX, goalZ] == Tile.Fire || tiles[goalX, goalZ] == Tile.Goal || tiles[goalX, goalZ] == Tile.Floor)
@@ -778,6 +826,7 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(0.05f);
         onEnterPortal.Raise(this, tiles);
+        yield return new WaitForSeconds(0.05f);
         onEnterPortal2.Raise(this, portalGoalPos);
         onEnterPortal3.Raise(this, portalPairings);
         onEnterPortal5.Raise(this, half);
@@ -821,7 +870,8 @@ public class PlayerMovement : MonoBehaviour
         if (!portaling && sender is PortalManager)
         {
             willBeDestroyed = (bool)_willDestroy;
+            half = willBeDestroyed;
+            Debug.Log("EVENT RECEIVED: " + willBeDestroyed + "\nPOS: " + transform.position.x + ", " + transform.position.z + "\nHALF: " + half);
         }
     }
-
 }
