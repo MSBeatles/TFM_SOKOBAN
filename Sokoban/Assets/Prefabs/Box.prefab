@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 4743438449215899213}
   - component: {fileID: 7388068774185694580}
   - component: {fileID: 1129274858124250398}
+  - component: {fileID: 4907517946180466278}
+  - component: {fileID: 3891475404257740941}
   m_Layer: 0
   m_Name: Box
   m_TagString: Crate
@@ -66,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: daa9eadb5e9efdd4d81558dd99ff7cd0, type: 2}
+  - {fileID: 2100000, guid: 3d872c2fda95c344ca222c1a8d754ae6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -144,6 +146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onGoalReached: {fileID: 11400000, guid: 6be6197a8b91d0941b4286c5a3faa188, type: 2}
   onGoalExited: {fileID: 11400000, guid: 911c7dde29535ba48bd350ba7460a568, type: 2}
+  onPortalTouched: {fileID: 11400000, guid: 3cf74bfc56a9e0041bf401f2b44eccc2, type: 2}
 --- !u!114 &1129274858124250398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,6 +166,62 @@ MonoBehaviour:
       - m_Target: {fileID: 7388068774185694580}
         m_TargetAssemblyTypeName: BoxMovement, Assembly-CSharp
         m_MethodName: ReceivePortalMovement
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &4907517946180466278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7388068774185694579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 3cf74bfc56a9e0041bf401f2b44eccc2, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7388068774185694580}
+        m_TargetAssemblyTypeName: BoxMovement, Assembly-CSharp
+        m_MethodName: ReceivePermissionToMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &3891475404257740941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7388068774185694579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e654bcb4d7d093e46aa020a8f660210e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 0b47d7e2c3f53f64393e886a0b8bfab8, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7388068774185694580}
+        m_TargetAssemblyTypeName: BoxMovement, Assembly-CSharp
+        m_MethodName: CanCrossPortal
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

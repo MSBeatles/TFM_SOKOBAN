@@ -28,6 +28,7 @@ public class LoadLevel : MonoBehaviour
     public GameObject player;
     public GameObject portal;
     public GameObject fire;
+    public GameObject ice;
     public Transform camera;
 
 
@@ -40,7 +41,7 @@ public class LoadLevel : MonoBehaviour
 
     private Transform t_player;
 
-
+    string path;
 
     private int maxX;
     private int maxY;
@@ -51,7 +52,8 @@ public class LoadLevel : MonoBehaviour
     {
         //Aquí carreguem el nivell
         //string path = Application.persistentDataPath + "\\" + PlayerPrefs.GetString("ChosenLevel");
-        string path = "Assets\\LevelDesigns\\" + PlayerPrefs.GetString("ChosenLevel") + ".txt";
+        //string path = "Assets\\LevelDesigns\\" + PlayerPrefs.GetString("ChosenLevel") + ".txt";
+        path = Application.dataPath + "/StreamingAssets/LevelDesigns/" + PlayerPrefs.GetString("ChosenLevel") + ".txt";
         //Debug.Log(path);
         StreamReader reader = new StreamReader(path, true);
 
@@ -95,7 +97,6 @@ public class LoadLevel : MonoBehaviour
                 {
                     //myObjects[i, j] = Instantiate(goal, new Vector3(i, 0.0f, j), Quaternion.identity);
                     Instantiate(goal, new Vector3(i, 0.0f, j), Quaternion.identity);
-                    Instantiate(floor, new Vector3(i, 0.0f, j), Quaternion.identity);
                     //tiles[i, j] = Tile.Goal;
                     onGoalSet.Raise(this, 0);
                     i++;
@@ -166,6 +167,11 @@ public class LoadLevel : MonoBehaviour
                     //myObjects[i, j] = Instantiate(fire, new Vector3(i, 0.0f, j), transform.rotation * Quaternion.identity);
                     Instantiate(fire, new Vector3(i, 0.0f, j), transform.rotation * Quaternion.identity);
                     //tiles[i, j] = Tile.RightPortal;
+                    i++;
+                }
+                else if (line[k] == 'I')
+                {
+                    Instantiate(ice, new Vector3(i, 0.0f, j), transform.rotation * Quaternion.identity);
                     i++;
                 }
             }

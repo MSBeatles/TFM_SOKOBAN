@@ -27,4 +27,10 @@ public class LevelSelectManager : MonoBehaviour
         PlayerPrefs.SetString("ChosenLevel", btn.GetComponentInChildren<TMP_Text>().text);
         SceneManager.LoadScene("Level");
     }
+
+
+    public void Home()
+    {
+        SceneManager.LoadScene("Main Menu");
+    }
 }

@@ -8,10 +8,17 @@ public class BoxMovement : MonoBehaviour
     private Vector3 currentPos;
     private bool moving;
     private bool portaling;
+    private bool ice;
     private bool isNew;
+    private bool stop;
+    private bool canCrossPortal;
+    private float incX;
+    private float incZ;
+    private Vector3 direction;
     [Header ("GAME EVENTS")]
     public GameEvent onGoalReached;
     public GameEvent onGoalExited;
+    public GameEvent onPortalTouched;
 
 
     // Start is called before the first frame update
@@ -22,7 +29,10 @@ public class BoxMovement : MonoBehaviour
         moving = false;
         portaling = false;
         isNew = true;
-        StartCoroutine(NotNew());
+        direction = new Vector3(0.0f, 0.0f, 0.0f);
+        ice = false;
+        incX = 0.0f;
+        incZ = 0.0f;
     }
 
     // Update is called once per frame
@@ -35,10 +45,39 @@ public class BoxMovement : MonoBehaviour
             {
                 moving = false;
                 currentPos = goalPos;
-                Debug.Log(portaling);
                 if (portaling)
                 {
                     Destroy(gameObject);
+                }
+                if (ice && !stop && !isNew)
+                {
+                    moving = true;
+                    if (direction.x > 0)
+                    {
+                        incX = 1.0f;
+                        incZ = 0.0f;
+                    }
+                    else if (direction.x < 0)
+                    {
+                        incX = -1.0f;
+                        incZ = 0.0f;
+                    }
+                    else if (direction.z > 0)
+                    {
+                        incX = 0.0f;
+                        incZ = 1.0f;
+                    }
+                    else if (direction.z < 0)
+                    {
+                        incX = 0.0f;
+                        incZ = -1.0f;
+                    }
+                    ice = false;
+                    goalPos = currentPos + new Vector3(incX, 0.0f, incZ);
+                }
+                if (isNew)
+                {
+                    isNew = false;
                 }
             }
         }
@@ -49,8 +88,11 @@ public class BoxMovement : MonoBehaviour
     {
         if (coll.tag == "PlayerPush")
         {
+            isNew = false;
+            stop = false;
+            canCrossPortal = true;
             moving = true;
-            Vector3 direction = transform.position - coll.transform.position;
+            direction = transform.position - coll.transform.position;
             if (direction.x > 0)
             {
                 goalPos = currentPos + new Vector3(1.0f, 0.0f, 0.0f);
@@ -75,11 +117,35 @@ public class BoxMovement : MonoBehaviour
         }
         else if (coll.tag == "Portal")
         {
+            onPortalTouched.Raise(this, true);
             foreach (Collider col in GetComponents<Collider>())
             {
                 col.enabled = false;
             }
             portaling = true;
+            moving = true;
+            if (canCrossPortal == false)
+            {
+                stop = true;
+                goalPos = currentPos;
+                portaling = false;
+                foreach (Collider col in GetComponents<Collider>())
+                {
+                    col.enabled = true;
+                }
+            }
+        }
+        else if (coll.tag == "Ice")
+        {
+            ice = true;
+            moving = true;
+            direction = coll.transform.position - transform.position;
+            Debug.Log("Direction: " + direction);
+        }
+        else if (coll.tag == "Crate" || coll.tag == "Wall")
+        {
+            stop = true;
+            goalPos = currentPos;
         }
     }
 
@@ -94,20 +160,21 @@ public class BoxMovement : MonoBehaviour
 
     public void ReceivePortalMovement(Component sender, object _originalToSpawn)
     {
-        if (!portaling && isNew)
+        int[] positions = (int[]) _originalToSpawn;
+        if (!portaling && positions[0] == (int)currentPos.x && positions[1] == (int)currentPos.z)
         {
-            int[] pos = (int[]) _originalToSpawn;
             moving = true;
-            Debug.Log(pos[0]);
-            Debug.Log(pos[1]);
-            goalPos.x = pos[0];
-            goalPos.z = pos[1];
+            goalPos.x = positions[2];
+            goalPos.z = positions[3];
         }
     }
 
-    private IEnumerator NotNew()
+    public void CanCrossPortal(Component sender, object _canCross)
     {
-        yield return new WaitForSeconds(0.1f);
-        isNew = false;
+        if (sender is PlayerMovement)
+        {
+            canCrossPortal = false;
+        }
     }
+
 }

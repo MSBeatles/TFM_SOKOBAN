@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
 
     public void GoalReached()
     {
-        goals_reached++;
+        StartCoroutine(GoalReachedCoroutine());
     }
 
 
@@ -45,7 +45,13 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator VictoryScreen()
     {
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(0.3f);
         SceneManager.LoadScene("Victory");
+    }
+
+    private IEnumerator GoalReachedCoroutine()
+    {
+        yield return new WaitForSeconds(0.3f);
+        goals_reached++;
     }
 }
