@@ -31,4 +31,9 @@ public class VictoryScreenManager : MonoBehaviour
     {
         SceneManager.LoadScene("Level Selection");
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
 }

@@ -22,4 +22,9 @@ public class MenuManager : MonoBehaviour
     public void LevelSelect(){
         SceneManager.LoadScene("Level Selection");
     }
+
+    public void Exit()
+    {
+        Application.Quit();
+    }
 }

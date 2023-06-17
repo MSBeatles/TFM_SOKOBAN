@@ -42,13 +42,16 @@ public class PortalManager : MonoBehaviour
 
     public void CreateNewBox(Component sender, object _spawnPoint)
     {
-        int[] spawnPoint = (int[]) _spawnPoint;
-        GameObject myBox = Instantiate(box, new Vector3(spawnPoint[0], 0.8f, spawnPoint[1]), Quaternion.identity);
-        foreach (Collider col in myBox.GetComponents<Collider>())
+        if (sender is PlayerMovement)
         {
-            col.enabled = false;
+            int[] spawnPoint = (int[])_spawnPoint;
+            GameObject myBox = Instantiate(box, new Vector3(spawnPoint[0], 0.8f, spawnPoint[1]), Quaternion.identity);
+            foreach (Collider col in myBox.GetComponents<Collider>())
+            {
+                col.enabled = false;
+            }
+            StartCoroutine(RestoreColliders(myBox));
         }
-        StartCoroutine(RestoreColliders(myBox));
     }
 
 

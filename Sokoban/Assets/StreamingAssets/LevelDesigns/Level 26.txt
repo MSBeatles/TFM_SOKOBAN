@@ -1,0 +1,23 @@
+8
+7
+P F F F Q Q W W
+F F F B Q Q W W
+F F Q Q Q W W W
+F F F Q F F F F
+F F F Q W G Q F
+F F F F F Q F F
+F F F F F F F F
+
+
+
+[0,1,2,3,4,5,6,7,8,9]
+[0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9]
